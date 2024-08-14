@@ -2,6 +2,15 @@ provider "aws" {
   region = var.region
 }
 
+data "aws_instance" "existing" {
+  instance_id = var.existing_ec2_instance_id
+  count       = var.existing_ec2_instance_id != "" ? 1 : 0
+}
+
+locals {
+  allowed_ip = var.existing_ec2_instance_id != "" ? "${data.aws_instance.existing[0].public_ip}/32" : "0.0.0.0/0"
+}
+
 resource "aws_vpc" "main" {
   cidr_block           = var.vpc_cidr
   enable_dns_hostnames = true
@@ -85,7 +94,7 @@ resource "aws_security_group" "web" {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = [var.my_ip]
+    cidr_blocks = [local.allowed_ip]
   }
 
   egress {
@@ -111,12 +120,13 @@ resource "aws_instance" "nextcloud_server" {
     Name = "NextcloudServer"
   }
 
-  user_data = templatefile("${path.module}/user_data.tpl", {
-    db_host     = aws_db_instance.nextcloud.endpoint
-    db_user     = var.db_username
-    db_password = var.db_password
-    db_name     = var.db_name
-    domain      = var.domain
+  user_data = templatefile("${path.module}/user_data.sh", {
+    db_host                  = aws_db_instance.nextcloud.endpoint
+    db_user                  = var.db_username
+    db_password              = var.db_password
+    db_name                  = var.db_name
+    domain                   = var.domain
+    nextcloud_admin_password = var.nextcloud_admin_password
   })
 }
 

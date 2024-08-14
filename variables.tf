@@ -26,10 +26,6 @@ variable "key_name" {
   description = "Name of the EC2 key pair"
 }
 
-variable "my_ip" {
-  description = "Your IP address for SSH access"
-}
-
 variable "domain" {
   default = "flumorstasis.hu"
 }
@@ -44,4 +40,15 @@ variable "db_username" {
 
 variable "db_password" {
   description = "Database password"
+}
+
+variable "nextcloud_admin_password" {
+  description = "Initial Nextcloud admin password"
+  sensitive   = true
+}
+
+variable "existing_ec2_instance_id" {
+  description = "ID of an existing EC2 instance to use for IP whitelisting"
+  type        = string
+  default     = ""
 }

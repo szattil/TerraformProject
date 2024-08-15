@@ -12,6 +12,7 @@ variable "key_name" {
 
 variable "db_name" {
   description = "Database name for Nextcloud"
+  default     = "nextcloudDB"
 }
 
 variable "db_username" {
@@ -32,4 +33,20 @@ variable "nextcloud_admin_password" {
 
 variable "letsencrypt_email" {
   description = "Email for Let's Encrypt notifications"
+}
+
+variable "route53_zone_id" {
+  description = "ID of the existing Route53 zone"
+  type        = string
+}
+
+variable "domain_name" {
+  description = "The domain name for the Nextcloud instance"
+  default     = "flumorstasis.hu"
+}
+
+variable "subdomain" {
+  description = "The existing subdomain for the Nextcloud instance"
+  type        = string
+  default     = "cloud"
 }

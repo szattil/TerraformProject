@@ -2,7 +2,7 @@ provider "aws" {
   region = var.region
 }
 
-resource "random_string" "db_name" {
+resource "random_string" "suffix" {
   length  = 8
   special = false
   upper   = false
@@ -15,7 +15,7 @@ resource "aws_db_instance" "nextcloud_db" {
   instance_class       = "db.t3.micro"  // Free tier eligible
   allocated_storage    = 20
   storage_type         = "gp2"
-  db_name              = "nextcloud_${random_string.db_name.result}"
+  db_name              = var.db_name
   username             = var.db_username
   password             = var.db_password
   parameter_group_name = "default.mysql8.0"
@@ -70,9 +70,9 @@ resource "aws_instance" "nextcloud" {
                   environment:
                     - NEXTCLOUD_ADMIN_USER=${var.nextcloud_admin_user}
                     - NEXTCLOUD_ADMIN_PASSWORD=${var.nextcloud_admin_password}
-                    - NEXTCLOUD_TRUSTED_DOMAINS=cloud.flumorstasis.hu
+                    - NEXTCLOUD_TRUSTED_DOMAINS=${var.subdomain}.${var.domain_name}
                     - MYSQL_HOST=${aws_db_instance.nextcloud_db.endpoint}
-                    - MYSQL_DATABASE=${aws_db_instance.nextcloud_db.db_name}
+                    - MYSQL_DATABASE=${var.db_name}
                     - MYSQL_USER=${var.db_username}
                     - MYSQL_PASSWORD=${var.db_password}
 
@@ -84,7 +84,7 @@ resource "aws_instance" "nextcloud" {
               EOF
 
   tags = {
-    Name = "NextcloudServer"
+    Name = "NextcloudServer-${random_string.suffix.result}"
   }
 }
 
@@ -112,16 +112,4 @@ resource "aws_security_group" "nextcloud" {
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
-}
-
-resource "aws_route53_zone" "main" {
-  name = "flumorstasis.hu"
-}
-
-resource "aws_route53_record" "nextcloud" {
-  zone_id = aws_route53_zone.main.zone_id
-  name    = "cloud.flumorstasis.hu"
-  type    = "A"
-  ttl     = "300"
-  records = [aws_instance.nextcloud.public_ip]
 }

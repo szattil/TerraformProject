@@ -1,16 +1,13 @@
-# Provider configuration
 provider "aws" {
   region = var.region
 }
 
-# Random string for unique naming
 resource "random_string" "suffix" {
   length  = 8
   special = false
   upper   = false
 }
 
-# VPC
 resource "aws_vpc" "nextcloud_vpc" {
   cidr_block           = var.vpc_cidr
   enable_dns_hostnames = true
@@ -21,7 +18,6 @@ resource "aws_vpc" "nextcloud_vpc" {
   }
 }
 
-# Internet Gateway
 resource "aws_internet_gateway" "nextcloud_igw" {
   vpc_id = aws_vpc.nextcloud_vpc.id
 
@@ -30,7 +26,6 @@ resource "aws_internet_gateway" "nextcloud_igw" {
   }
 }
 
-# Public Subnets
 resource "aws_subnet" "public" {
   count                   = 2
   vpc_id                  = aws_vpc.nextcloud_vpc.id
@@ -43,7 +38,7 @@ resource "aws_subnet" "public" {
   }
 }
 
-# Private Subnets
+# Load balancer needs 2+ subnets
 resource "aws_subnet" "private" {
   count             = 2
   vpc_id            = aws_vpc.nextcloud_vpc.id
@@ -76,7 +71,7 @@ resource "aws_route_table_association" "public" {
   route_table_id = aws_route_table.public.id
 }
 
-# ACM Certificate
+# ACM Certificate (Supposedly isn't in the free tier)
 resource "aws_acm_certificate" "nextcloud_cert" {
   domain_name       = "${var.subdomain}.${var.domain_name}"
   validation_method = "DNS"
@@ -90,7 +85,7 @@ resource "aws_acm_certificate" "nextcloud_cert" {
   }
 }
 
-# Route53 record for certificate validation
+#Route53 record for certificate validation (use an already existing one)
 resource "aws_route53_record" "cert_validation" {
   for_each = {
     for dvo in aws_acm_certificate.nextcloud_cert.domain_validation_options : dvo.domain_name => {
@@ -108,13 +103,13 @@ resource "aws_route53_record" "cert_validation" {
   zone_id         = var.route53_zone_id
 }
 
-# Certificate validation
+#Certificate validation
 resource "aws_acm_certificate_validation" "cert_validation" {
   certificate_arn         = aws_acm_certificate.nextcloud_cert.arn
   validation_record_fqdns = [for record in aws_route53_record.cert_validation : record.fqdn]
 }
 
-# Application Load Balancer
+#Load Balancer
 resource "aws_lb" "nextcloud" {
   name               = "nextcloud-lb"
   internal           = false
@@ -176,7 +171,7 @@ resource "aws_lb_listener" "nextcloud_https" {
   }
 }
 
-# RDS MySQL Instance
+# RDS MySQL
 resource "aws_db_instance" "nextcloud_db" {
   identifier           = "nextcloud-db-${random_string.suffix.result}"
   engine               = "mysql"
@@ -216,6 +211,7 @@ resource "aws_instance" "nextcloud" {
     Name = "NextcloudServer-${random_string.suffix.result}"
   }
 
+  #Long ass shell script to install docker. Should work but if doesn't destroy the terraform setup because it won't build in an already existing instance
   user_data = <<-EOF
               #!/bin/bash
               exec > >(tee /var/log/user-data.log|logger -t user-data -s 2>/dev/console) 2>&1

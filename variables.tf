@@ -1,26 +1,28 @@
 variable "region" {
-  default = "eu-central-1"
+  description = "The AWS region to deploy to"
+  default     = "eu-central-1"
+}
+
+variable "vpc_cidr" {
+  description = "The CIDR block for the VPC"
+  default     = "10.0.0.0/16"
 }
 
 variable "ami_id" {
-  default = "ami-0caef02b518350c8b" # Ubuntu 20.04 LTS
+  description = "The AMI ID to use for the EC2 instance"
+  default     = "ami-0caef02b518350c8b"  # Ubuntu 20.04 LTS
 }
 
 variable "key_name" {
-  description = "Name of the EC2 key pair"
-}
-
-variable "db_name" {
-  description = "Database name for Nextcloud"
-  default     = "nextcloudDB"
+  description = "The name of the EC2 key pair"
 }
 
 variable "db_username" {
-  description = "Database username for Nextcloud"
+  description = "Username for the RDS database"
 }
 
 variable "db_password" {
-  description = "Database password for Nextcloud"
+  description = "Password for the RDS database"
 }
 
 variable "nextcloud_admin_user" {
@@ -31,22 +33,15 @@ variable "nextcloud_admin_password" {
   description = "Nextcloud admin password"
 }
 
-variable "letsencrypt_email" {
-  description = "Email for Let's Encrypt notifications"
-}
-
-variable "route53_zone_id" {
-  description = "ID of the existing Route53 zone"
-  type        = string
+variable "subdomain" {
+  description = "The subdomain for the Nextcloud instance"
+  default     = "cloud"
 }
 
 variable "domain_name" {
   description = "The domain name for the Nextcloud instance"
-  default     = "flumorstasis.hu"
 }
 
-variable "subdomain" {
-  description = "The existing subdomain for the Nextcloud instance"
-  type        = string
-  default     = "cloud"
+variable "route53_zone_id" {
+  description = "The Route53 zone ID"
 }

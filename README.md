@@ -1,12 +1,12 @@
 # TerraformProject
 
-Creates an AWS instance and installs Nextcloud in a Docker container. The connection it creates is secure.
+Creates an AWS instance and installs Nextcloud in a Docker container. The connection has valid certification through ACM.
 
 Generates an RDS MySQL database, and an EC2 instance with load balancer and security groups.
-Before use generate a key pair and a Route53 access yourself.
+Only accepts existing Route53 and key-pairs in the variables, create those beforehand.
 
-Use the terraform.tfvars file for your own variables.
+Use the terraform.tfvars file to modify the variables.
 
 
-The EC2 and DB instances are within the free tier (they are in variables.tf and main.tf respectively if you want to pay more).
+The EC2 and DB instances are kept within the free tier (they are in variables.tf and main.tf respectively if you want to pay more).
 Route53 and the Load Balancer solution should cost some penny so be careful.

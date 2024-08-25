@@ -1,6 +1,6 @@
 # TerraformProject
 
-Creates an AWS instance and installs Nextcloud in a Docker container. The connection has valid certification through ACM.
+Creates an AWS instance and installs Nextcloud in a Docker container. Some of the settings are burnt in the code, variables.tfvar handles the rest. The connection has valid certification through ACM.
 
 Generates an RDS MySQL database, and an EC2 instance with load balancer and security groups.
 Only accepts existing Route53 and key-pairs in the variables, create those beforehand.
